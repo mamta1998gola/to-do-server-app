@@ -1,0 +1,84 @@
+{
+    "prabhat5172992@gmail.com": {
+        "allTodos": [
+            {
+                "id": "a30fd2ab-18ce-4046-aebf-1f9d36048790",
+                "todo": "Car"
+            },
+            {
+                "id": "f79c2d11-8f98-490c-9aef-3f3d4987ad33",
+                "todo": "study for 4th sem exam"
+            },
+            {
+                "id": "8e46e0d3-c635-4449-b305-1c1fca661fbe",
+                "todo": "Home coming"
+            }
+        ],
+        "completedTodos": [
+            {
+                "id": "f1302c83-f4bf-4b1c-8f0a-b553946733a8",
+                "todo": "Write stories"
+            },
+            {
+                "id": "eb6f3279-63ce-4246-a664-4092e2b329a4",
+                "todo": "Buy Laptop"
+            },
+            {
+                "id": "9da2853e-f751-45e1-83eb-3b296e0e0b65",
+                "todo": "Complete Mamta Project"
+            },
+            {
+                "id": "e61fb380-3fab-4fd2-ab75-d7bb34dce9ef",
+                "todo": "Complete Mamta Project"
+            }
+        ]
+    },
+    "mamta1998gola@gmail.com": {
+        "allTodos": [
+            {
+                "id": "f79c2d11-8f98-490c-9aef-3f3d4987ad33",
+                "todo": "study for 4th sem exam"
+            },
+            {
+                "id": "8e46e0d3-c635-4449-b305-1c1fca661fbe",
+                "todo": "Home coming"
+            },
+            {
+                "id": "5173c514-ad4f-403d-918e-ce789791824f",
+                "todo": "bike"
+            }
+        ],
+        "completedTodos": [
+            {
+                "id": "f1302c83-f4bf-4b1c-8f0a-b553946733a8",
+                "todo": "Write stories"
+            },
+            {
+                "id": "eb6f3279-63ce-4246-a664-4092e2b329a4",
+                "todo": "Buy Laptop"
+            },
+            {
+                "id": "1fdf186a-0599-48a7-9c0b-eee52a6cd435",
+                "todo": "study for 4th sem"
+            }
+        ]
+    },
+    "prabhat7660403@gmail.com": {
+        "allTodos": [
+            {
+                "id": "0fd7ffb4-2a96-4277-a02a-261b6b4cc366",
+                "todo": "Complete Mamta Project"
+            },
+            {
+                "id": "8cc118ba-affc-4025-9a02-435530bb2501",
+                "todo": "Complete My Project 9000"
+            }
+        ],
+        "completedTodos": [
+            {
+                "id": "44297855-e322-4057-8b75-cdd65f46fad1",
+                "todo": "Complete My Project"
+            }
+        ]
+    }
+}
