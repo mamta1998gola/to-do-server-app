@@ -9,11 +9,9 @@ const { signIn, welcome, refresh, logout, getUserData } = require("./handlers")
 
 const app = express();
 app.use(cookieParser());
-// Dynamically set allowed origins
-const allowedOrigins = [
-    "https://todo-notes-app-roan.vercel.app/",
-    "http://localhost:5173"
-];
+
+// Set allowed origins
+const allowedOrigin = /^https:\/\/todo-notes-app-roan\.vercel\.app(\/.*)?$/;
 
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
