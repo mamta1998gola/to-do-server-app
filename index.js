@@ -9,6 +9,11 @@ const { signIn, welcome, refresh, logout, getUserData } = require("./handlers")
 
 const app = express();
 app.use(cookieParser());
+// Dynamically set allowed origins
+const allowedOrigins = [
+    "https://todo-notes-app-roan.vercel.app/",
+    "http://localhost:5173"
+];
 
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
@@ -17,8 +22,30 @@ const rawBodyHandler = function (req, res, buf, encoding) {
     }
 }
 
-app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
-app.options('*', cors());  // enable pre-flight
+// app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
+// app.options('*', cors());  // enable pre-flight
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            // If the origin is not specified (like in some non-browser clients), or is allowed, accept the request
+            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ["GET", "HEAD", "POST", "DELETE", "PUT", "PATCH"],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "Cache-Control",
+            "Expires",
+            "Pragma",
+        ],
+        credentials: true,
+    })
+);
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
@@ -96,7 +123,7 @@ app.post('/addNotes', (req, res) => {
 
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
         const d = JSON.parse(data);
-        if(!d[email]) {
+        if (!d[email]) {
             d[email] = []
         }
 
@@ -143,8 +170,8 @@ app.post('/addtodo', (req, res) => {
 
     fs.readFile('todos.json', 'utf8', (err, data) => {
         const d = JSON.parse(data);
-        if(!d[email]) {
-            d[email] = {"allTodos": [], "completedTodos": []}
+        if (!d[email]) {
+            d[email] = { "allTodos": [], "completedTodos": [] }
         }
 
         d[email].allTodos.push({
