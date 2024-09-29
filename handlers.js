@@ -1,8 +1,20 @@
 const jwt = require("jsonwebtoken");
 const users = require("./userlist.json");
 
-const jwtKey = "todo_notes_storage_key"
-const jwtExpirySeconds = 1500
+const jwtKey = "to-do-notes-storage-key"
+const jwtExpirySeconds = 60 * 60;
+
+// Debug function to manually verify the token you provided
+const getUserData = (req, res) => {
+	const { token } = req.body;
+
+	try {
+		const decoded = jwt.verify(token, jwtKey);
+		res.send({ data: decoded })
+	} catch (error) {
+		console.error('Debug: Token verification failed:', error.message);
+	}
+}
 
 const signIn = (req, res, userlist) => {
 	// Get credentials from JSON body
@@ -19,23 +31,26 @@ const signIn = (req, res, userlist) => {
 		return res.status(401).send({ message: "Unauthorised Login!" }).end()
 	}
 
-	// Create a new token with the username in the payload
-	// and which expires 300 seconds after issue
-	const token = jwt.sign({ email }, jwtKey, {
-		algorithm: "HS256",
-		expiresIn: jwtExpirySeconds,
-	});
+	const token = jwt.sign(
+		{ email },
+		jwtKey,
+		{
+			algorithm: 'HS256',
+			expiresIn: jwtExpirySeconds,
+		}
+	);
+
 
 	// set the cookie as the token string, with a similar max age as the token
 	// here, the max age is in milliseconds, so we multiply by 1000
 	res.cookie("token", token, { maxAge: jwtExpirySeconds * 1000 });
+
 	res.send({ token, user });
 	res.end();
 }
 
 const welcome = (req, res) => {
-	// We can obtain the session token from the requests cookies, which come with every request
-	const token = req.cookies.token;
+	const token = req.body.token;
 
 	// if the cookie is not set, return an unauthorized error
 	if (!token) {
@@ -44,10 +59,6 @@ const welcome = (req, res) => {
 
 	let payload = null;
 	try {
-		// Parse the JWT string and store the result in `payload`.
-		// Note that we are passing the key in this method as well. This method will throw an error
-		// if the token is invalid (if it has expired according to the expiry time we set on sign in),
-		// or if the signature does not match
 		payload = jwt.verify(token, jwtKey)
 	} catch (e) {
 		if (e instanceof jwt.JsonWebTokenError) {
@@ -113,7 +124,8 @@ module.exports = {
 	signIn,
 	welcome,
 	refresh,
-	logout
+	logout,
+	getUserData
 };
 
 

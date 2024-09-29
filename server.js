@@ -5,18 +5,19 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
-const { signIn, welcome, refresh, logout } = require("./handlers")
+const { signIn, welcome, refresh, logout, getUserData } = require("./handlers")
 
 const app = express();
 app.use(cookieParser());
 
-var rawBodyHandler = function (req, res, buf, encoding) {
+// Custom raw body handler
+const rawBodyHandler = function (req, res, buf, encoding) {
     if (buf && buf.length) {
         req.rawBody = buf.toString(encoding || 'utf8');
     }
 }
 
-app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control' }));
+app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
 app.options('*', cors());  // enable pre-flight
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
@@ -85,9 +86,10 @@ app.put('/signup', (req, res) => {
 });
 
 app.post('/signin', signIn);
-app.get('/welcome', welcome);
+app.post('/welcome', welcome);
 app.post('/refresh', refresh);
 app.get('/logout', logout);
+app.post('/userdata', getUserData);
 
 app.post('/addNotes', (req, res) => {
     const { notes, email } = req.body;
