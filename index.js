@@ -11,7 +11,7 @@ const app = express();
 app.use(cookieParser());
 
 // Set allowed origins
-const allowedOrigin = /^https:\/\/todo-notes-app-roan\.vercel\.app(\/.*)?$/;
+const allowedOrigins = ['https://todo-notes-app-roan.vercel.app'];
 
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
@@ -23,27 +23,16 @@ const rawBodyHandler = function (req, res, buf, encoding) {
 // app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
 // app.options('*', cors());  // enable pre-flight
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            // If the origin is not specified (like in some non-browser clients), or is allowed, accept the request
-            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: ["GET", "HEAD", "POST", "DELETE", "PUT", "PATCH"],
-        allowedHeaders: [
-            "Content-Type",
-            "Authorization",
-            "Cache-Control",
-            "Expires",
-            "Pragma",
-        ],
-        credentials: true,
-    })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // if you're dealing with cookies, include this option
+}));
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
