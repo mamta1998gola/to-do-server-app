@@ -34,6 +34,8 @@ app.use(cors({
   credentials: true // if you're dealing with cookies, include this option
 }));
 
+app.options('*', cors());
+
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
 app.use(express.static(path.join(__dirname, "../dist")));
