@@ -149,12 +149,11 @@ app.get('/getNotes/:email', (req, res) => {
     });
 });
 
-app.delete('/deleteNotes/:email', (req, res) => {
-    const { id } = req.body;
+app.delete('/deleteNotes', (req, res) => {
+    const { id, email:usr } = req.body;
 
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
         const d = JSON.parse(data);
-        const usr = req.params.email || user;
 
         d[usr] = [...d[usr].filter(item => item.id !== id)];
 
@@ -189,9 +188,10 @@ app.post('/addtodo', (req, res) => {
     res.status(200).send({ 'message': 'Successfully added todo!' });
 });
 
-app.get('/getAllTodos/:email', (req, res) => {
+app.post('/getAllTodos', (req, res) => {
+    const { email } = req.body;
     fs.readFile('todos.json', 'utf8', (err, data) => {
-        const d = JSON.parse(data)[req.params.email];
+        const d = JSON.parse(data)[email];
         res.status(200).send(JSON.stringify(d) || { allTodos: [], completedTodos: [] });
     });
 });
