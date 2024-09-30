@@ -143,8 +143,10 @@ app.post('/addNotes', (req, res) => {
 });
 
 app.get('/getNotes/:email', (req, res) => {
+    const { email } = req.body;
+
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
-        const notesData = JSON.parse(data)[req.params.email || user];
+        const notesData = JSON.parse(data)[email || user];
         res.status(200).send(notesData || []);
     });
 });
