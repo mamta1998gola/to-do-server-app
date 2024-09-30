@@ -11,7 +11,7 @@ const app = express();
 app.use(cookieParser());
 
 // Set allowed origins
-const allowedOrigins = ['https://todo-notes-app-roan.vercel.app'];
+const allowedOrigins = 'https://todo-notes-app-roan.vercel.app';
 
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
@@ -24,21 +24,34 @@ const rawBodyHandler = function (req, res, buf, encoding) {
 // app.options('*', cors());  // enable pre-flight
 
 // Update CORS configuration
-app.use(cors({
-    origin: (origin, callback) => {
-        if (allowedOrigins.includes(origin) || !origin) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    credentials: true
-}));
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         if (allowedOrigins.includes(origin) || !origin) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('Not allowed by CORS'));
+//         }
+//     },
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+//     credentials: true
+// }));
 
 // Enable pre-flight requests for all routes
-app.options('*', cors());
+// app.options('*', cors());
+
+
+// Custom middleware to set CORS headers
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', allowedOrigin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', true);
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
