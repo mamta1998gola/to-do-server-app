@@ -34,10 +34,17 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 // test code
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
     res.on('finish', () => {
+        console.log('Response status:', res.statusCode);
         console.log('Response headers:', res.getHeaders());
     });
     next();
@@ -142,7 +149,7 @@ app.post('/addNotes', (req, res) => {
     res.status(200).send({ 'message': 'Successfully added notes!' });
 });
 
-app.get('/getNotes/:email', (req, res) => {
+app.get('/getNotes', (req, res) => {
     const { email } = req.body;
 
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
@@ -152,7 +159,7 @@ app.get('/getNotes/:email', (req, res) => {
 });
 
 app.delete('/deleteNotes', (req, res) => {
-    const { id, email:usr } = req.body;
+    const { id, email: usr } = req.body;
 
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
         const d = JSON.parse(data);
