@@ -10,9 +10,6 @@ const { signIn, welcome, refresh, logout, getUserData } = require("./handlers")
 const app = express();
 app.use(cookieParser());
 
-// Set allowed origins
-const allowedOrigins = 'https://todo-notes-app-roan.vercel.app';
-
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
     if (buf && buf.length) {
@@ -20,38 +17,32 @@ const rawBodyHandler = function (req, res, buf, encoding) {
     }
 }
 
-// app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
-// app.options('*', cors());  // enable pre-flight
+/// CORS configuration
+const corsOptions = {
+    origin: 'https://todo-notes-app-roan.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+};
 
-// Update CORS configuration
-// app.use(cors({
-//     origin: (origin, callback) => {
-//         if (allowedOrigins.includes(origin) || !origin) {
-//             callback(null, true);
-//         } else {
-//             callback(new Error('Not allowed by CORS'));
-//         }
-//     },
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-//     credentials: true
-// }));
+// Apply CORS to all routes
+app.use(cors(corsOptions));
 
-// Enable pre-flight requests for all routes
-// app.options('*', cors());
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
-
-// Custom middleware to set CORS headers
+// test code
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', allowedOrigin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', true);
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
+    console.log(`${req.method} ${req.url}`);
+    console.log('Request headers:', req.headers);
+    res.on('finish', () => {
+        console.log('Response headers:', res.getHeaders());
+    });
     next();
 });
+
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
@@ -61,6 +52,11 @@ console.log(path.join(__dirname, "../dist"));
 app.get('/', (req, res) => {
     res.send('Hello World');
 })
+
+// test cors
+app.get('/test-cors', cors(corsOptions), (req, res) => {
+    res.json({ message: 'CORS is working' });
+});
 
 const PORT = process.env.PORT || 8080;
 
