@@ -23,17 +23,21 @@ const rawBodyHandler = function (req, res, buf, encoding) {
 // app.use(cors({ allowedHeaders: 'Content-Type, Cache-Control', credentials: true }));
 // app.options('*', cors());  // enable pre-flight
 
+// Update CORS configuration
 app.use(cors({
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true // if you're dealing with cookies, include this option
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    credentials: true
 }));
 
+// Enable pre-flight requests for all routes
 app.options('*', cors());
 
 app.use(bodyParser.json({ verify: rawBodyHandler }));
