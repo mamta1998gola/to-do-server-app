@@ -113,7 +113,7 @@ app.post('/addNotes', async (req, res) => {
         await fs.writeFile(dataPath, JSON.stringify(notesData, null, 4));
         res.status(200).send({ message: 'Successfully added notes!' });
     } catch (err) {
-        res.status(500).send({ message: "Internal server error" });
+        res.status(500).send({ message: `Unable to add notes: ${JSON.stringify(err)}` });
     }
 });
 
