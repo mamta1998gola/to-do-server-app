@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const cookieParser = require("cookie-parser");
@@ -131,6 +130,9 @@ app.get('/getNotes', (req, res) => {
     const { email } = req.body;
 
     fs.readFile('user-notes.json', 'utf8', (err, data) => {
+        if(err) {
+            return res.send(500).send({ error: `Unable to read notes.json file: ${path.join(__dirname, user-notes.json)}`})
+        }
         const notesData = JSON.parse(data)[email || user];
         res.status(200).send(notesData || []);
     });
