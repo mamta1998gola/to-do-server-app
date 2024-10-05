@@ -17,53 +17,31 @@ const rawBodyHandler = function (req, res, buf, encoding) {
     }
 }
 
-/// CORS configuration
-const corsOptions = {
-    origin: 'https://todo-notes-app-roan.vercel.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-};
-
-// Apply CORS to all routes
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-
-// test code
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-});
-
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    console.log('Request headers:', req.headers);
-    console.log('Request body:', req.body);
-    res.on('finish', () => {
-        console.log('Response status:', res.statusCode);
-        console.log('Response headers:', res.getHeaders());
-    });
-    next();
-});
-
-
 app.use(bodyParser.json({ verify: rawBodyHandler }));
 
-app.use(express.static(path.join(__dirname, "../dist")));
-console.log(path.join(__dirname, "../dist"));
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 })
-
-// test cors
-app.get('/test-cors', cors(corsOptions), (req, res) => {
-    res.json({ message: 'CORS is working' });
-});
 
 const PORT = process.env.PORT || 8080;
 
