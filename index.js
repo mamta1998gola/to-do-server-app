@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
+const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -8,6 +9,12 @@ const { signIn, welcome, refresh, logout, getUserData } = require('./handlers');
 
 const app = express();
 app.use(cookieParser());
+
+// Use CORS middleware
+app.use(cors({
+    origin: 'https://todo-notes-app-roan.vercel.app', // Allow only this origin
+    credentials: true // Allow cookies and other credentials
+}));
 
 // Custom raw body handler
 const rawBodyHandler = function (req, res, buf, encoding) {
