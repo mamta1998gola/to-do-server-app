@@ -1,10 +1,10 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
-const cookieParser = require("cookie-parser");
-const { signIn, welcome, refresh, logout, getUserData } = require("./handlers")
+const cookieParser = require('cookie-parser');
+const { signIn, welcome, refresh, logout, getUserData } = require('./handlers');
 
 const app = express();
 app.use(cookieParser());
@@ -20,82 +20,68 @@ app.use(bodyParser.json({ verify: rawBodyHandler }));
 
 // Add headers before the routes are defined
 app.use(function (req, res, next) {
-
-    // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', 'https://todo-notes-app-roan.vercel.app');
-
-    // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
     next();
 });
 
 app.get('/', (req, res) => {
     res.send('Hello World');
-})
+});
 
 const PORT = process.env.PORT || 8080;
-
 const user = "prabhat5172992@gmail.com";
 
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
     const { username, password, email } = req.body;
 
     if (username && password && /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email)) {
-        fs.readFile('userlist.json', 'utf8', (err, data) => {
-            const d = JSON.parse(data);
-            if (!d.find(item => item.email === email)) {
-                d.push({
-                    username,
-                    email,
-                    password
-                });
+        try {
+            const dataPath = path.join(__dirname, 'userlist.json');
+            const data = await fs.readFile(dataPath, 'utf8');
+            const userList = JSON.parse(data);
 
-                fs.writeFile('userlist.json', JSON.stringify(d, null, 4), (err) => {
-                    if (err) throw err;
-                    else {
-                        return res.send(signIn(req, res, d));
-                    }
-                });
+            if (!userList.find(item => item.email === email)) {
+                userList.push({ username, email, password });
+                await fs.writeFile(dataPath, JSON.stringify(userList, null, 4));
+                return res.send(signIn(req, res, userList));
             } else {
-                res.status(400).send({ "message": "User already exists!" });
+                res.status(400).send({ message: "User already exists!" });
             }
-        });
-        // signIn(req, res);
+        } catch (err) {
+            res.status(500).send({ message: "Internal server error" });
+        }
     } else {
-        res.status(400).send({ "message": "Data is not correct!" })
+        res.status(400).send({ message: "Data is not correct!" });
     }
 });
 
-app.put('/signup', (req, res) => {
+app.put('/signup', async (req, res) => {
     const { email, password } = req.body;
 
-    fs.readFile('userlist.json', 'utf8', (err, data) => {
-        const d = JSON.parse(data);
-        if (!d.find(item => item.email === email)) {
-            res.status(400).send({ "message": "User doesn't exit!" })
+    try {
+        const dataPath = path.join(__dirname, 'userlist.json');
+        const data = await fs.readFile(dataPath, 'utf8');
+        const userList = JSON.parse(data);
+
+        if (!userList.find(item => item.email === email)) {
+            res.status(400).send({ message: "User doesn't exist!" });
         } else {
-            const changedData = d.map(item => {
+            const updatedList = userList.map(item => {
                 if (item.email === email) {
                     item.password = password;
                 }
                 return item;
             });
 
-            fs.writeFile('userlist.json', JSON.stringify(changedData, null, 4), (err) => {
-                if (err) throw err;
-                res.status(200).send({ message: "Update successful!" });
-            });
+            await fs.writeFile(dataPath, JSON.stringify(updatedList, null, 4));
+            res.status(200).send({ message: "Update successful!" });
         }
-    });
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" });
+    }
 });
 
 app.post('/signin', signIn);
@@ -104,61 +90,61 @@ app.post('/refresh', refresh);
 app.get('/logout', logout);
 app.post('/userdata', getUserData);
 
-app.post('/addNotes', (req, res) => {
+app.post('/addNotes', async (req, res) => {
     const { notes, email } = req.body;
 
-    fs.readFile('user-notes.json', 'utf8', (err, data) => {
-        const d = JSON.parse(data);
-        if (!d[email]) {
-            d[email] = []
+    try {
+        const dataPath = path.join(__dirname, 'user-notes.json');
+        const data = await fs.readFile(dataPath, 'utf8');
+        const notesData = JSON.parse(data);
+
+        if (!notesData[email]) {
+            notesData[email] = [];
         }
 
-        d[email].push({
-            id: uuidv4(),
-            notes
-        });
-
-        fs.writeFile('user-notes.json', JSON.stringify(d, null, 4), (err) => {
-            if (err) throw err;
-        });
-    });
-
-    res.status(200).send({ 'message': 'Successfully added notes!' });
+        notesData[email].push({ id: uuidv4(), notes });
+        await fs.writeFile(dataPath, JSON.stringify(notesData, null, 4));
+        res.status(200).send({ message: 'Successfully added notes!' });
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" });
+    }
 });
 
-app.get('/getNotes', (req, res) => {
+app.post('/getNotes', async (req, res) => {
     const { email } = req.body;
 
-    fs.readFile('user-notes.json', 'utf8', (err, data) => {
-        if(err) {
-            return res.send(500).send({ error: `Unable to read notes.json file: ${path.join(__dirname, user-notes.json)}`})
-        }
+    try {
+        const dataPath = path.join(__dirname, 'user-notes.json');
+        const data = await fs.readFile(dataPath, 'utf8');
         const notesData = JSON.parse(data)[email || user];
         res.status(200).send(notesData || []);
-    });
+    } catch (err) {
+        res.status(500).send({ error: `Unable to read notes.json file` });
+    }
 });
 
-app.delete('/deleteNotes', (req, res) => {
-    const { id, email: usr } = req.body;
+app.delete('/deleteNotes', async (req, res) => {
+    const { id, email } = req.body;
 
-    fs.readFile('user-notes.json', 'utf8', (err, data) => {
-        const d = JSON.parse(data);
+    try {
+        const dataPath = path.join(__dirname, 'user-notes.json');
+        const data = await fs.readFile(dataPath, 'utf8');
+        const notesData = JSON.parse(data);
 
-        d[usr] = [...d[usr].filter(item => item.id !== id)];
-
-        fs.writeFile('user-notes.json', JSON.stringify(d, null, 4), (err) => {
-            if (err) throw err;
-            else {
-                res.status(200).send({ message: 'notes deleted!' })
-            }
-        });
-    });
+        notesData[email] = notesData[email].filter(item => item.id !== id);
+        await fs.writeFile(dataPath, JSON.stringify(notesData, null, 4));
+        res.status(200).send({ message: 'Notes deleted!' });
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" });
+    }
 });
 
-app.post('/addtodo', (req, res) => {
+app.post('/addtodo', async (req, res) => {
     const { todo, email } = req.body;
 
-    fs.readFile('todos.json', 'utf8', (err, data) => {
+    try {
+        const dataPath = path.join(__dirname, 'todos.json');
+        const data = await fs.readFile(dataPath, 'utf8');
         const d = JSON.parse(data);
         if (!d[email]) {
             d[email] = { "allTodos": [], "completedTodos": [] }
@@ -168,28 +154,33 @@ app.post('/addtodo', (req, res) => {
             id: uuidv4(),
             todo
         });
-
-        fs.writeFile('todos.json', JSON.stringify(d, null, 4), (err) => {
-            if (err) throw err;
-        });
-    });
-
-    res.status(200).send({ 'message': 'Successfully added todo!' });
+        await fs.writeFile(dataPath, JSON.stringify(d, null, 4));
+        res.status(200).send({ 'message': 'Successfully added todo!' });
+    } catch (err) {
+        res.status(500).send({ error: `Unable to read notes.json file` });
+    }
 });
 
-app.post('/getAllTodos', (req, res) => {
+app.post('/getAllTodos', async (req, res) => {
     const { email } = req.body;
-    fs.readFile('todos.json', 'utf8', (err, data) => {
-        const d = JSON.parse(data)[email];
+    try {
+        const dataPath = path.join(__dirname, 'todos.json');
+        const data = await fs.readFile(dataPath, 'utf8');
+        
         res.status(200).send(JSON.stringify(d) || { allTodos: [], completedTodos: [] });
-    });
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" });
+    }
 });
 
-app.put('/updateTodos', (req, res) => {
+app.put('/updateTodos', async (req, res) => {
     const { id, type, email } = req.body;
     const d = { "allTodos": [], "completedTodos": [] }
 
-    fs.readFile('todos.json', 'utf8', (err, data) => {
+    try {
+        const dataPath = path.join(__dirname, 'todos.json');
+        const data = await fs.readFile(dataPath, 'utf8');
+
         const todoData = JSON.parse(data);
         let userTodo = todoData[email];
         d.completedTodos = [...userTodo.completedTodos];
@@ -210,14 +201,15 @@ app.put('/updateTodos', (req, res) => {
         }
 
         todoData[email] = { ...d }
-        fs.writeFile('todos.json', JSON.stringify(todoData, null, 4), (err) => {
-            if (err) throw err;
-        });
-    });
 
-    res.status(200).send({ 'message': 'Successfully updated' })
+        await fs.writeFile(dataPath, JSON.stringify(todoData, null, 4));
+        
+        res.status(200).send({ 'message': 'Successfully updated' })
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log('App is running on port: ', PORT);
+    console.log('App is running on port:', PORT);
 });
