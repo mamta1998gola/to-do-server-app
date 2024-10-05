@@ -169,7 +169,7 @@ app.post('/getAllTodos', async (req, res) => {
         
         res.status(200).send(JSON.stringify(d) || { allTodos: [], completedTodos: [] });
     } catch (err) {
-        res.status(500).send({ message: "Unable to read notes.json file: ",err });
+        res.status(500).send({ message: `Unable to read notes.json file: ${SON.stringify(err)}`});
     }
 });
 
